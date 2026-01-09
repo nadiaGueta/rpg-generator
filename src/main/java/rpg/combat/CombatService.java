@@ -1,37 +1,75 @@
 package rpg.combat;
 
+import rpg.observer.CombatObserver;
+
+import java.util.ArrayList;
+import java.util.List;
+
 public class CombatService {
 
-    public String attack(FighterState attacker, FighterState defender) {
-        int power = attacker.getCharacter().getTotalStats();
-        int damage = Math.max(1, power / 5); // simple
+    private final List<CombatObserver> observers = new ArrayList<>();
 
+    public void addObserver(CombatObserver o) {
+        observers.add(o);
+    }
+
+    private void notifyObservers(String msg) {
+        for (CombatObserver o : observers) {
+            o.onEvent(msg);
+        }
+    }
+
+    public void attack(FighterState attacker, FighterState defender) {
+        int power = attacker.getCharacter().getTotalStats();
+        int damage = Math.max(1, power / 5);
+        if (!attacker.isAlive()) {
+            notifyObservers(attacker.getCharacter().getName() + " est KO et ne peut plus attaquer.");
+            return;
+        }
+        if (!defender.isAlive()) {
+            notifyObservers(defender.getCharacter().getName() + " est déjà KO.");
+            return;
+        }
         if (defender.isDefending()) {
             damage = Math.max(1, damage / 2);
-            defender.setDefending(false); // défense ne protège qu’un coup
+            defender.setDefending(false);
         }
 
         defender.damage(damage);
 
-        return attacker.getCharacter().getName() + " attaque " +
+        String msg = attacker.getCharacter().getName() + " attaque " +
                 defender.getCharacter().getName() + " : -" + damage +
                 " HP (HP " + defender.getCharacter().getName() + "=" + defender.getHp() + ")";
+
+        notifyObservers(msg);
+
+        if (!defender.isAlive()) {
+            notifyObservers("🏆 KO: " + defender.getCharacter().getName());
+        }
     }
 
-    public String defend(FighterState defender) {
+    public void defend(FighterState defender) {
+        if (!defender.isAlive()) {
+            notifyObservers(defender.getCharacter().getName() + " est KO et ne peut plus se défendre.");
+            return;
+        }
         defender.setDefending(true);
-        return defender.getCharacter().getName() + " se défend (prochain dégât réduit)";
+
+        String msg = defender.getCharacter().getName()
+                + " se défend (prochain dégât réduit)";
+        notifyObservers(msg);
     }
 
-    public String usePower(FighterState user) {
-        // Version minimale : juste un message.
-        // Option mieux : boost temporaire => mais on garde simple pour MVP.
-        return user.getCharacter().getName() + " utilise un pouvoir";
+    public void usePower(FighterState user) {
+        if (!user.isAlive()) {
+            notifyObservers(user.getCharacter().getName() + " est KO et ne peut pas utiliser de pouvoir.");
+            return;
+        }
+
+        String msg = user.getCharacter().getName() + " utilise un pouvoir (MVP).";
+        notifyObservers(msg);
     }
 
-    public String winner(FighterState a, FighterState b) {
-        if (a.isAlive() && !b.isAlive()) return a.getCharacter().getName();
-        if (!a.isAlive() && b.isAlive()) return b.getCharacter().getName();
-        return "Aucun (égalité)";
-    }
+
+
 }

@@ -13,13 +13,13 @@ public class DefendCommand implements Command {
     }
     @Override
     public String description() {
-        return defender.getCharacter().getName() + " attaque " + defender.getCharacter().getName();
-    }
-    @Override
-    public void execute() {
-        System.out.println(combat.defend(defender));
+        return defender.getCharacter().getName() + " se défend";
     }
 
+    @Override
+    public void execute() {
+        combat.defend(defender);
+    }
     @Override
     public String name() {
         return "DEFEND(" + defender.getCharacter().getName() + ")";

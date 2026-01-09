@@ -14,7 +14,7 @@ public class UsePowerCommand implements Command {
 
     @Override
     public void execute() {
-        System.out.println(combat.usePower(user));
+        combat.usePower(user);
     }
 
     @Override
@@ -24,6 +24,6 @@ public class UsePowerCommand implements Command {
 
     @Override
     public String description() {
-        return "";
+        return user.getCharacter().getName() + " utilise son pouvoir";
     }
 }

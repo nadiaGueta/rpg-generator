@@ -11,18 +11,21 @@ public class CommandManager {
     public CommandManager(Consumer<String> log) {
         this.log = log;
     }
+
     public void execute(Command c) {
         c.execute();
         history.add(c);
     }
 
+    // ✅ Replay = rejouer le récit, pas re-exécuter les actions
     public void replay() {
         log.accept("=== REPLAY ===");
         for (Command c : history) {
-            c.execute();
-            log.accept(c.description());
+            log.accept(c.description()); // ou c.name() si tu préfères
         }
         log.accept("(Replay terminé)");
+
+        history.clear(); // si tu veux garder ton comportement actuel
     }
 
     public void clear() {

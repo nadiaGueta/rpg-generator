@@ -16,14 +16,13 @@ public class AttackCommand implements Command {
 
     @Override
     public void execute() {
-        System.out.println(combat.attack(attacker, defender));
+        combat.attack(attacker, defender);
     }
 
     @Override
     public String name() {
         return "ATTACK(" + attacker.getCharacter().getName() + " -> " + defender.getCharacter().getName() + ")";
     }
-
 
     @Override
     public String description() {

@@ -1,4 +1,5 @@
 package rpg;
+
 import rpg.builder.CharacterBuilder;
 import rpg.combat.CombatService;
 import rpg.combat.FighterState;
@@ -9,7 +10,7 @@ import rpg.composite.Army;
 import rpg.composite.CharacterLeaf;
 import rpg.composite.GroupComponent;
 import rpg.composite.Party;
-import rpg.core.Character ;
+import rpg.core.Character;
 import rpg.dao.CharacterDao;
 import rpg.dao.InMemoryCharacterDao;
 import rpg.decorator.Telepathy;
@@ -20,90 +21,91 @@ import rpg.ui.GameFrame;
 import javax.swing.*;
 import java.util.List;
 
-//TIP To <b>Run</b> code, press <shortcut actionId="Run"/> or
-// click the <icon src="AllIcons.Actions.Execute"/> icon in the gutter.
 public class Main {
-    public static void main() {
+    public static void main(String[] args) {
 
-
-
-
-
-//us1.1 Création d’un personnage avec le Builder
-        Character mario  = new CharacterBuilder()
+        // US1.1 Builder
+        Character mario = new CharacterBuilder()
                 .setName("mario")
                 .setStrength(5)
                 .setAgility(8)
                 .setIntelligence(7)
                 .build();
-        Character luigi  = new CharacterBuilder()
-                .setName("rio")
+
+        Character luigi = new CharacterBuilder()
+                .setName("luigi")
                 .setStrength(7)
                 .setAgility(8)
                 .setIntelligence(7)
                 .build();
-        System.out.println(mario.getDescription());
-        System.out.println(luigi.getDescription());
-        System.out.println("Total stats for " +mario.getName() +" = "+ mario.getTotalStats());
-        System.out.println("Total stats for " +luigi.getName()+" = "+luigi.getTotalStats());
 
+        //  Peach
+        Character peach = new CharacterBuilder()
+                .setName("peach")
+                .setStrength(4)
+                .setAgility(7)
+                .setIntelligence(9)
+                .build();
 
-//US 2.1 singleton
-    GameSettings settings = GameSettings.getInstance();
-    settings.setMaxStatPoints(30);
-    System.out.println("Personnage valide ? " + settings.isValid(mario));
-    System.out.println("Personnage valide ? " + settings.isValid(luigi));
+        //  Donkey Kong
+        Character donkeyKong = new CharacterBuilder()
+                .setName("donkey kong")
+                .setStrength(10)
+                .setAgility(4)
+                .setIntelligence(3)
+                .build();
 
+        //  5e perso pour Team 2 (au choix)
+        Character yoshi = new CharacterBuilder()
+                .setName("yoshi")
+                .setStrength(6)
+                .setAgility(9)
+                .setIntelligence(5)
+                .build();
 
-//US 1.2  Decorator
+        // US 2.1 Singleton
+        GameSettings settings = GameSettings.getInstance();
+        settings.setMaxStatPoints(30);
 
-        luigi = new Telepathy(luigi) ;
-        System.out.println(luigi.getDescription());
-        System.out.println("his new power = " +luigi.getTotalStats());
- //us 1.3 Le sauvegarder / le récupérer (DAO)
+        System.out.println("Personnage valide ? " + settings.isValid(mario));
+        System.out.println("Personnage valide ? " + settings.isValid(luigi));
+        System.out.println("Personnage valide ? " + settings.isValid(peach));
+        System.out.println("Personnage valide ? " + settings.isValid(donkeyKong));
+        System.out.println("Personnage valide ? " + settings.isValid(yoshi));
 
-CharacterDao dao = new InMemoryCharacterDao() ;
+        // US 1.2 Decorator (ex: sur Luigi)
+        luigi = new Telepathy(luigi);
 
-        // sauvegarde
+        // US 1.3 DAO
+        CharacterDao dao = new InMemoryCharacterDao();
         dao.save(mario);
         dao.save(luigi);
-        // lecture
-        System.out.println("Tous les personnages :");
-        for (Character c : dao.findAll()) {
-            System.out.println(c);
-        }
-        System.out.println("Recherche Mario : " + dao.findByName("Mario"));
+        dao.save(peach);
+        dao.save(donkeyKong);
+        dao.save(yoshi);
 
-//us 1.4 L’ajouter dans une équipe (Composite)
-
-        // feuilles
+        // US 1.4 Composite (ex: Team 1 seulement ici)
         GroupComponent marioLeaf = new CharacterLeaf(mario);
         GroupComponent luigiLeaf = new CharacterLeaf(luigi);
 
-        // party
         Party team1 = new Party("Team 1");
         team1.add(marioLeaf);
         team1.add(luigiLeaf);
-       // Party team2 = new Party("Team 2");
-       // team2.add(luigiLeaf);
 
-        // army
         Army army = new Army("Red Army");
         army.add(team1);
-       // army.add(team2);
 
-        // affichage
         army.printDetails("");
         System.out.println("Army Power = " + army.getPower());
 
-// ===== JOUR 2 : TEST COMMAND + COMBAT =====
+        // ===== JOUR 2 : TEST COMMAND + COMBAT (console) =====
         System.out.println("\n===== JOUR 2 : COMBAT =====");
 
-        FighterState fMario = new rpg.combat.FighterState(mario, 50);
-        FighterState fLuigi = new rpg.combat.FighterState(luigi, 50);
+        FighterState fMario = new FighterState(mario, 50);
+        FighterState fLuigi = new FighterState(luigi, 50);
 
-       CombatService combat = new rpg.combat.CombatService();
-       CommandManager manager = new rpg.command.CommandManager(System.out::println);
+        CombatService combat = new CombatService();
+        CommandManager manager = new CommandManager(System.out::println);
 
         manager.execute(new AttackCommand(combat, fMario, fLuigi));
         manager.execute(new DefendCommand(combat, fLuigi));
@@ -114,36 +116,24 @@ CharacterDao dao = new InMemoryCharacterDao() ;
         System.out.println("HP Luigi=" + fLuigi.getHp());
 
         manager.replay();
-      //  while (fMario.isAlive() && fLuigi.isAlive()) {
-          //  manager.execute(new AttackCommand(combat, fMario, fLuigi));
-       // }
-       // System.out.println("Vainqueur: " + combat.winner(fMario, fLuigi));
 
-
+        // ===== SWING =====
         final Character marioFinal = mario;
         final Character luigiFinal = luigi;
+        final Character peachFinal = peach;
+        final Character donkeyFinal = donkeyKong;
+        final Character yoshiFinal = yoshi;
 
-     SwingUtilities.invokeLater(() -> {
+        SwingUtilities.invokeLater(() -> {
             GameFrame frame = new GameFrame();
             GameController controller = new GameController(frame);
 
             controller.init(
-                    List.of(marioFinal),   // Team 1
-                    List.of(luigiFinal)    // Team 2
+                    List.of(marioFinal, luigiFinal),                 //  Team 1 = 2
+                    List.of(peachFinal, donkeyFinal, yoshiFinal)     //  Team 2 = 3
             );
 
             frame.setVisible(true);
         });
-
-
-
-
-
-
     }
-
-
-
-
-    }
-
+}
