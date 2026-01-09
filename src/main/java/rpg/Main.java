@@ -1,5 +1,10 @@
 package rpg;
 import rpg.builder.CharacterBuilder;
+import rpg.combat.CombatService;
+import rpg.combat.FighterState;
+import rpg.command.CommandManager;
+import rpg.command.DefendCommand;
+import rpg.command.AttackCommand;
 import rpg.composite.Army;
 import rpg.composite.CharacterLeaf;
 import rpg.composite.GroupComponent;
@@ -9,11 +14,16 @@ import rpg.dao.CharacterDao;
 import rpg.dao.InMemoryCharacterDao;
 import rpg.decorator.Telepathy;
 import rpg.settings.GameSettings;
+import rpg.ui.GameController;
+import rpg.ui.GameFrame;
+
+import javax.swing.*;
+import java.util.List;
 
 //TIP To <b>Run</b> code, press <shortcut actionId="Run"/> or
 // click the <icon src="AllIcons.Actions.Execute"/> icon in the gutter.
 public class Main {
-    static void main() {
+    public static void main() {
 
 
 
@@ -85,6 +95,48 @@ CharacterDao dao = new InMemoryCharacterDao() ;
         // affichage
         army.printDetails("");
         System.out.println("Army Power = " + army.getPower());
+
+// ===== JOUR 2 : TEST COMMAND + COMBAT =====
+        System.out.println("\n===== JOUR 2 : COMBAT =====");
+
+        FighterState fMario = new rpg.combat.FighterState(mario, 50);
+        FighterState fLuigi = new rpg.combat.FighterState(luigi, 50);
+
+       CombatService combat = new rpg.combat.CombatService();
+       CommandManager manager = new rpg.command.CommandManager(System.out::println);
+
+        manager.execute(new AttackCommand(combat, fMario, fLuigi));
+        manager.execute(new DefendCommand(combat, fLuigi));
+        manager.execute(new AttackCommand(combat, fMario, fLuigi));
+        manager.execute(new AttackCommand(combat, fMario, fLuigi));
+
+        System.out.println("HP Mario=" + fMario.getHp());
+        System.out.println("HP Luigi=" + fLuigi.getHp());
+
+        manager.replay();
+      //  while (fMario.isAlive() && fLuigi.isAlive()) {
+          //  manager.execute(new AttackCommand(combat, fMario, fLuigi));
+       // }
+       // System.out.println("Vainqueur: " + combat.winner(fMario, fLuigi));
+
+
+        final Character marioFinal = mario;
+        final Character luigiFinal = luigi;
+
+     SwingUtilities.invokeLater(() -> {
+            GameFrame frame = new GameFrame();
+            GameController controller = new GameController(frame);
+
+            controller.init(
+                    List.of(marioFinal),   // Team 1
+                    List.of(luigiFinal)    // Team 2
+            );
+
+            frame.setVisible(true);
+        });
+
+
+
 
 
 

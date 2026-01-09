@@ -51,4 +51,17 @@ public class Character {
                 ", intelligence=" + intelligence +
                 '}';
     }
+
+
+    public int getStrength() {
+        return strength;
+    }
+
+    public int getAgility() {
+        return agility;
+    }
+
+    public int getIntelligence() {
+        return intelligence;
+    }
 }
